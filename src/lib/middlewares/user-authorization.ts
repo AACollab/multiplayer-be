@@ -1,11 +1,5 @@
 import { RequestHandler, Request, Response } from "express";
-import {
-  errorResponse,
-  getToken,
-  hasToken,
-  isSuccess,
-  isValidHeader,
-} from "../utils/utils";
+import { errorResponse, hasToken, isValidHeader } from "../utils/utils";
 
 export const userAuthorization: RequestHandler = (
   req: Request,

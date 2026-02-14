@@ -6,7 +6,7 @@ import { prepareToRun } from "./lib/configs/app-config";
 import { router } from "./lib/routes";
 import WebSocket from "ws";
 
-const WebSocketServer = new WebSocket.Server({ port: 8080 });
+const WebSocketServer = new WebSocket.Server({ port: 10000 });
 const app = express();
 
 /// All the initialization code is wrapped in here
