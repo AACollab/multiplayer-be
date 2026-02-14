@@ -40,6 +40,7 @@
     "yup": "^1.6.1"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
     "@types/express": "^4.17.21",
     "@types/luxon": "^3.4.2",
     "@types/node": "^20.11.20",
