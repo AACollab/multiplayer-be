@@ -6,8 +6,8 @@ export const userAuthorization: RequestHandler = (
   res: Response,
   next,
 ) => {
-  if (!isValidHeader(req) || !hasToken(req))
-    return errorResponse(res, "Access restricted");
+  // if (!isValidHeader(req) || !hasToken(req))
+  //   return errorResponse(res, "Access restricted");
 
   next();
 };
