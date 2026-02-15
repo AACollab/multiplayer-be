@@ -1,36 +1,26 @@
-/// Load all environment variables
-require("dotenv").config();
-
 import express from "express";
-import { prepareToRun } from "./lib/configs/app-config";
-import { router } from "./lib/routes";
+import { createServer } from "http";
 import WebSocket from "ws";
 
-const WebSocketServer = new WebSocket.Server({ port: 10000 });
 const app = express();
+const server = createServer(app);
+const port = process.env.PORT || 10000;
 
-/// All the initialization code is wrapped in here
-prepareToRun(app);
+const wss = new WebSocket.Server({ server, path: "/ws" });
 
-const PORT = process.env.PORT;
+app.get("/", (req, res) => {
+  res.send("Hello over HTTP!");
+});
 
-WebSocketServer.on("connection", (clientSocket) => {
-  console.log("A client connected: ", clientSocket); // Log when a client connects
+wss.on("connection", (ws) => {
+  console.log("WebSocket client connected");
 
-  // Event handler for when the server receives a message from a client
-  clientSocket.on("message", (message) => {
-    console.log(`Received: ${message}`); // Log the received message
-    clientSocket.send(`Welcome: ${message}`); // Send a response to the client
-  });
-
-  // Event handler for when a client disconnects`
-  clientSocket.on("close", () => {
-    console.log("Client disconnected"); // Log when a client disconnects
+  ws.on("message", (message) => {
+    console.log("Received:", message.toString());
+    ws.send(`Hello over WebSocket!`);
   });
 });
 
-app.use("/", router);
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+server.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
 });
