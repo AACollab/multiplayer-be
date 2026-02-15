@@ -1,25 +1,17 @@
 import express from "express";
 import { createServer } from "http";
-import WebSocket from "ws";
+import { router } from "./lib/routes";
+import { GamesWSServer } from "./lib/websocket";
 
 const app = express();
 const server = createServer(app);
 const port = process.env.PORT || 10000;
 
-const wss = new WebSocket.Server({ server, path: "/ws" });
+app.use(express.json()); // Parses JSON bodies
+app.use(express.urlencoded({ extended: true })); // Parses URL-encoded bodies
+app.use("/", router);
 
-app.get("/", (req, res) => {
-  res.send("Hello over HTTP!");
-});
-
-wss.on("connection", (ws) => {
-  console.log("WebSocket client connected");
-
-  ws.on("message", (message) => {
-    console.log("Received:", message.toString());
-    ws.send(`Hello over WebSocket!`);
-  });
-});
+new GamesWSServer(server);
 
 server.listen(port, () => {
   console.log(`Server listening on port ${port}`);

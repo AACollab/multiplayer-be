@@ -23,9 +23,21 @@ export const successResponse = <T>(
     .json({ success: true, message, data: data ?? {} });
 };
 
-export const getUniqueId = (): string => nanoid(16);
+export const getUniqueId = (): string => {
+  // Generate a 16-character nanoid (default is 21, so we specify 16)
+  const id = nanoid(16);
 
-export const getUniqueName = (): string => nanoid(5);
+  // Add hyphen after every 4 characters
+  return id.replace(/(.{4})(?!$)/g, "$1-");
+};
+
+export const getUniqueName = (): string => {
+  // Generate a 16-character nanoid (default is 21, so we specify 16)
+  const id = nanoid(6);
+
+  // Add hyphen after every 4 characters
+  return id.replace(/(.{4})(?!$)/g, "$1-");
+};
 
 export const getToken = (req: Request): string => {
   const segments = (req.headers.authorization ?? "").split(" ");
