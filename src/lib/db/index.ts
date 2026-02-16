@@ -1,4 +1,6 @@
+import { DateTime } from "luxon";
 import { Game, OTP } from "../types";
+import { getOTP, getUniqueId, getUniqueName } from "../utils/utils";
 
 class GamesDB {
   private db: Game[] = [];
@@ -16,11 +18,20 @@ class GamesDB {
     return this.db.filter((item) => item.status === "started").slice();
   }
 
+  new() {
+    return {
+      id: getUniqueId(),
+      name: getUniqueName(),
+      status: "created",
+      result: "none",
+    } as Game;
+  }
+
   add(game: Game) {
     this.db.push(game);
 
     // Return copy
-    return this.db.slice();
+    return game;
   }
 
   update(game: Game) {
@@ -58,11 +69,19 @@ class OTPDB {
 
   constructor() {}
 
+  new(gameId: string) {
+    return {
+      id: gameId,
+      otp: getOTP(),
+      expires: DateTime.now().plus({ minutes: 30 }),
+    } as OTP;
+  }
+
   add(otp: OTP) {
     this.otps.push(otp);
 
     // Return copy
-    return this.otps.slice();
+    return otp;
   }
 
   update(otp: OTP) {
@@ -75,6 +94,19 @@ class OTPDB {
     // Return copy
     return this.otps.slice();
   }
+
+  delete(gameId: string) {
+    // remove all OTPs for the respective game id
+    this.otps = this.otps.filter((item) => item.id !== gameId);
+
+    // Return copy
+    return this.otps.slice();
+  }
+
+  read(gameId: string) {
+    return this.otps.find((item) => item.id === gameId);
+  }
 }
 
 export const gamesDB = new GamesDB();
+export const otpDB = new OTPDB();

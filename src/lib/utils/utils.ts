@@ -39,6 +39,14 @@ export const getUniqueName = (): string => {
   return id.replace(/(.{4})(?!$)/g, "$1-");
 };
 
+export const getOTP = (length: number = 4): string => {
+  let otp = "";
+  for (let i = 0; i < length; i++) {
+    otp += Math.floor(Math.random() * 10); // 0-9
+  }
+  return otp;
+};
+
 export const getToken = (req: Request): string => {
   const segments = (req.headers.authorization ?? "").split(" ");
   if (segments.length === 1) return segments[0];

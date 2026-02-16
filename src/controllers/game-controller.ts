@@ -1,6 +1,12 @@
 import { Request, Response } from "express";
-import { errorResponse, successResponse } from "../lib/utils/utils";
-import { gamesDB } from "../lib/db";
+import {
+  errorResponse,
+  getUniqueId,
+  getUniqueName,
+  successResponse,
+} from "../lib/utils/utils";
+import { gamesDB, otpDB } from "../lib/db";
+import { Game } from "../lib/types";
 
 export const getAllGames = async (req: Request, res: Response) => {
   try {
@@ -17,7 +23,21 @@ export const getAllGames = async (req: Request, res: Response) => {
 
 export const createGame = async (req: Request, res: Response) => {
   try {
-    return successResponse(res, [], "Game created successfully");
+    const newGame: Game = gamesDB.new();
+
+    const game = gamesDB.add(newGame);
+
+    if (game === newGame) {
+      const newOTP = otpDB.new(game.id);
+
+      const otp = otpDB.add(newOTP);
+
+      if (otp === newOTP) {
+        return successResponse(res, otp, "Game created successfully");
+      }
+    }
+
+    return errorResponse(res, "Failed to create a new game. Please try again");
   } catch (error) {
     console.error("Error creating game:", error);
     return errorResponse(res, error.message as string);
