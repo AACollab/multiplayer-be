@@ -13,6 +13,7 @@ export interface Game {
   size: number;
   player1?: Player;
   player2?: Player;
+  expires: DateTime;
 }
 
 export interface OTP {

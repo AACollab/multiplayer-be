@@ -1,21 +1,22 @@
 import { DateTime } from "luxon";
 import { Game, OTP } from "../types";
-import { getOTP, getUniqueId, getUniqueName } from "../utils/utils";
+import { getOTP, getUniqueId, getUniqueName, isExpired } from "../utils/utils";
+import { DEFAULT_EXPIRY } from "../constants";
 
 class GamesDB {
-  private db: Game[] = [];
+  private games: Game[] = [];
 
   constructor() {}
 
   get allGames() {
-    return this.db.slice();
+    return this.games.slice();
   }
   get allActiveGames() {
-    return this.db.filter((item) => item.status === "active").slice();
+    return this.games.filter((item) => item.status === "active").slice();
   }
 
   get allStartedGames() {
-    return this.db.filter((item) => item.status === "started").slice();
+    return this.games.filter((item) => item.status === "started").slice();
   }
 
   new(size: number) {
@@ -25,43 +26,48 @@ class GamesDB {
       status: "created",
       result: "none",
       size,
+      expires: DateTime.now().plus(DEFAULT_EXPIRY),
     } as Game;
   }
 
   add(game: Game) {
-    this.db.push(game);
+    this.games.push(game);
 
     // Return copy
     return game;
   }
 
   update(game: Game) {
-    const foundGameIndex = this.db.findIndex((item) => item.id === game.id);
+    const foundGameIndex = this.games.findIndex((item) => item.id === game.id);
 
     if (foundGameIndex > -1) {
-      this.db.splice(foundGameIndex, 1, game);
+      this.games.splice(foundGameIndex, 1, game);
     }
 
     // Return copy
-    return this.db.slice();
+    return this.games.slice();
   }
 
   delete(gameId: string) {
-    const foundGameIndex = this.db.findIndex((item) => item.id === gameId);
+    const foundGameIndex = this.games.findIndex((item) => item.id === gameId);
 
     if (foundGameIndex > -1) {
-      this.db.splice(foundGameIndex, 1);
+      this.games.splice(foundGameIndex, 1);
     }
 
     // Return copy
-    return this.db.slice();
+    return this.games.slice();
   }
 
   read(gameId: string) {
-    const foundGame = this.db.find((item) => item.id === gameId);
+    const foundGame = this.games.find((item) => item.id === gameId);
 
     // Return copy
     return foundGame;
+  }
+
+  cleanExpiredGames() {
+    this.games = this.games.filter((item) => !isExpired(item.expires));
   }
 }
 
@@ -74,7 +80,7 @@ class OTPDB {
     return {
       id: gameId,
       otp: getOTP(),
-      expires: DateTime.now().plus({ minutes: 30 }),
+      expires: DateTime.now().plus(DEFAULT_EXPIRY),
     } as OTP;
   }
 
@@ -106,6 +112,10 @@ class OTPDB {
 
   read(gameId: string) {
     return this.otps.find((item) => item.id === gameId);
+  }
+
+  cleanExpiredOTPs() {
+    this.otps = this.otps.filter((item) => !isExpired(item.expires));
   }
 }
 

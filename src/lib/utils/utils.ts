@@ -1,5 +1,6 @@
 import { nanoid } from "nanoid";
 import { Request, Response } from "express";
+import { DateTime, Duration } from "luxon";
 
 export const errorResponse = (
   res: Response,
@@ -46,6 +47,9 @@ export const getOTP = (length: number = 4): string => {
   }
   return otp;
 };
+
+export const isExpired = (expiry: DateTime) =>
+  expiry.diffNow("minutes")?.minutes < 0;
 
 export const getToken = (req: Request): string => {
   const segments = (req.headers.authorization ?? "").split(" ");
