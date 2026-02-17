@@ -18,12 +18,13 @@ class GamesDB {
     return this.db.filter((item) => item.status === "started").slice();
   }
 
-  new() {
+  new(size: number) {
     return {
       id: getUniqueId(),
       name: getUniqueName(),
       status: "created",
       result: "none",
+      size,
     } as Game;
   }
 

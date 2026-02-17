@@ -7,6 +7,8 @@ import {
 } from "../lib/utils/utils";
 import { gamesDB, otpDB } from "../lib/db";
 import { Game } from "../lib/types";
+import { number } from "yup";
+import { MAX_GAME_SIZE, MIN_GAME_SIZE } from "../lib/constants";
 
 export const getAllGames = async (req: Request, res: Response) => {
   try {
@@ -23,7 +25,29 @@ export const getAllGames = async (req: Request, res: Response) => {
 
 export const createGame = async (req: Request, res: Response) => {
   try {
-    const newGame: Game = gamesDB.new();
+    const { size } = req.body;
+
+    if (!size)
+      return errorResponse(
+        res,
+        "Game size not provided. Please provide correct size to create the game.",
+      );
+
+    const providedSize = parseInt(size) || MIN_GAME_SIZE;
+
+    if (providedSize < MIN_GAME_SIZE)
+      return errorResponse(
+        res,
+        "Game size is too small. Please provide correct size to create the game.",
+      );
+
+    if (providedSize > MAX_GAME_SIZE)
+      return errorResponse(
+        res,
+        "Game size is too large. Please provide correct size to create the game.",
+      );
+
+    const newGame: Game = gamesDB.new(parseInt(size) || MIN_GAME_SIZE);
 
     const game = gamesDB.add(newGame);
 
@@ -33,7 +57,11 @@ export const createGame = async (req: Request, res: Response) => {
       const otp = otpDB.add(newOTP);
 
       if (otp === newOTP) {
-        return successResponse(res, otp, "Game created successfully");
+        return successResponse(
+          res,
+          { ...game, otp: otp.otp },
+          "Game created successfully",
+        );
       }
     }
 

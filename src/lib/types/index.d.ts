@@ -10,6 +10,7 @@ export interface Game {
   name: string;
   status: "created" | "active" | "started";
   result: "none" | "draw" | "won";
+  size: number;
   player1?: Player;
   player2?: Player;
 }
