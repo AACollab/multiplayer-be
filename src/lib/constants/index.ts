@@ -12,4 +12,12 @@ export enum MessageTypes {
   MOVE = "move",
   DISCONNECT = "disconnect",
   CONNECT = "connect",
+  ACKNOWLEDGMENT = "acknowledgement",
+}
+
+export enum GameStatus {
+  CREATED = "created",
+  ACTIVE = "active",
+  IN_PROGRESS = "in-progress",
+  COMPLETED = "completed",
 }

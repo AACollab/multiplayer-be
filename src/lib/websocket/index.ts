@@ -8,7 +8,7 @@ import {
   successSocketResponse,
 } from "../utils/utils";
 import { gamesDB, otpDB } from "../db";
-import { MessageTypes } from "../constants";
+import { GameStatus, MessageTypes } from "../constants";
 
 export class GamesWSServer {
   private server: WebSocket.Server = null;
@@ -20,13 +20,30 @@ export class GamesWSServer {
     this.start();
   }
 
+  createPlayer(ws: WebSocket, gameId: string) {
+    const newConnection: ClientConnection = {
+      id: getUniqueId(),
+      gameId: gameId,
+      status: "active",
+      lastSentMessage: null,
+      lastRecievedMessage: null,
+      expires: setExpiry(1),
+      isPlayer: false,
+      isCreator: false,
+      ws: ws,
+    };
+
+    return newConnection;
+  }
+
   start() {
     this.server?.on("connection", (ws: WebSocket) => {
       console.log("WebSocket client connected. ");
 
       ws.on("message", (message: WebSocket.Data) => {
         try {
-          const request = JSON.parse(message.toString());
+          const messageString = message.toString();
+          const request = JSON.parse(messageString);
           this.processMessage(ws, request);
         } catch (error) {
           ws.close();
@@ -40,7 +57,7 @@ export class GamesWSServer {
     switch (message.type || "") {
       case MessageTypes.OTP:
         const otpDetails = message.data as OTP;
-        response = this.handleNewConnection(ws, otpDetails.id, otpDetails.otp);
+        response = this.handleOTP(ws, otpDetails.id, otpDetails.otp);
 
         if (!response.success) {
           ws.close();
@@ -49,6 +66,8 @@ export class GamesWSServer {
         break;
 
       case MessageTypes.CONNECT:
+        const connectionDetails = message.data as ConnectionRequest;
+        response = this.handleConnect(ws, connectionDetails.gameId);
         break;
 
       case MessageTypes.DISCONNECT:
@@ -72,44 +91,101 @@ export class GamesWSServer {
     this.sendRawMessage(ws, JSON.stringify(response));
   }
 
-  handleNewConnection(ws: WebSocket, gameId: string, otp: string) {
+  handleOTP(ws: WebSocket, gameId: string, otp: string) {
+    const foundGame = gamesDB.read(gameId);
+
+    if (!foundGame) {
+      return errorSocketResponse("Game not found");
+    }
+
     const isValidOTP = otpDB.validate(gameId, otp);
 
     if (!isValidOTP)
       return errorSocketResponse("Invalid details. Connection refused");
 
-    otpDB.delete(gameId);
+    const newConnection = this.createPlayer(ws, gameId);
 
-    const newConnection: ClientConnection = {
-      id: getUniqueId(),
-      gameId: gameId,
-      status: "active",
-      lastSentMessage: null,
-      lastRecievedMessage: null,
-      expires: setExpiry(1),
-      ws: ws,
-    };
+    newConnection.isPlayer = true;
+    newConnection.isCreator = true;
 
     this.players.push(newConnection);
 
-    return successSocketResponse({
+    otpDB.delete(gameId);
+    gamesDB.update({ ...foundGame, status: GameStatus.ACTIVE });
+
+    return successSocketResponse(MessageTypes.ACKNOWLEDGMENT, {
       playerId: newConnection.id,
       gameId: newConnection.gameId,
     });
+  }
+
+  handleConnect(ws: WebSocket, gameId: string) {
+    const foundGame = gamesDB.read(gameId);
+
+    var isValidGame = false;
+    const newConnection = this.createPlayer(ws, gameId);
+    if (foundGame?.status === GameStatus.ACTIVE) {
+      newConnection.isPlayer = true;
+      isValidGame = true;
+    } else if (foundGame?.status === GameStatus.IN_PROGRESS) {
+      newConnection.isPlayer = false;
+      isValidGame = true;
+    }
+
+    if (isValidGame) {
+      this.players.push(newConnection);
+
+      const allPayers = this.getAllPlayersExcept(gameId, newConnection.id);
+
+      if (allPayers.length > 0) {
+        allPayers.forEach((connection) => {
+          const messageToSend = successSocketResponse(MessageTypes.CONNECT, {
+            playerId: newConnection.id,
+            gameId: newConnection.gameId,
+          });
+
+          this.sendRawMessage(
+            connection.ws as WebSocket,
+            JSON.stringify(messageToSend),
+          );
+        });
+      } else {
+        return errorSocketResponse("No players available to play");
+      }
+
+      return successSocketResponse(MessageTypes.ACKNOWLEDGMENT, {
+        playerId: newConnection.id,
+        gameId: newConnection.gameId,
+      });
+    }
+
+    return errorSocketResponse("Invalid game");
   }
 
   handleNewMove(gameId: string, playerId: string, move: unknown) {
     const allPayers = this.getAllPlayersExcept(gameId, playerId);
 
     if (allPayers.length > 0) {
-      allPayers.forEach((connection) =>
-        this.sendRawMessage(connection.ws as WebSocket, JSON.stringify(move)),
-      );
+      allPayers.forEach((connection) => {
+        const messageToSend = successSocketResponse(MessageTypes.MOVE, move);
+
+        this.sendRawMessage(
+          connection.ws as WebSocket,
+          JSON.stringify(messageToSend),
+        );
+      });
     } else {
       return errorSocketResponse("No players available to play");
     }
 
-    return successSocketResponse(move);
+    return successSocketResponse(MessageTypes.MOVE, move);
+  }
+
+  getCreator(gameId: string) {
+    return this.players.filter(
+      (connection) =>
+        connection.gameId === gameId && connection.isCreator === true,
+    );
   }
 
   getPlayer(gameId: string, playerId: string) {
@@ -117,6 +193,10 @@ export class GamesWSServer {
       (connection) =>
         connection.id === playerId && connection.gameId === gameId,
     );
+  }
+
+  getAllPlayers(gameId: string) {
+    return this.players.filter((connection) => connection.gameId === gameId);
   }
 
   getAllPlayersExcept(gameId: string, playerId: string) {

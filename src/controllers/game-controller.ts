@@ -13,7 +13,7 @@ export const getAllGames = async (req: Request, res: Response) => {
   try {
     return successResponse(
       res,
-      gamesDB.allGames,
+      gamesDB.allActiveGames,
       "All games retrieved successfully",
     );
   } catch (error) {

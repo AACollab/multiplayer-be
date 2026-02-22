@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import { Request, Response } from "express";
 import { DateTime } from "luxon";
-import { DEFAULT_EXPIRY } from "../constants";
+import { DEFAULT_EXPIRY, MessageTypes } from "../constants";
 import { WebSocket } from "ws";
 
 export const errorResponse = (
@@ -33,9 +33,13 @@ export const errorSocketResponse = (message?: string) => {
   };
 };
 
-export const successSocketResponse = <T>(message?: T) => {
+export const successSocketResponse = <T>(
+  messageType: MessageTypes,
+  message?: T,
+) => {
   return {
     success: true,
+    type: messageType,
     message: message || "{}",
   };
 };

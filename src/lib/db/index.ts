@@ -21,7 +21,7 @@ class GamesDB {
   }
 
   get allStartedGames() {
-    return this.games.filter((item) => item.status === "started").slice();
+    return this.games.filter((item) => item.status === "in-progress").slice();
   }
 
   new(size: number) {

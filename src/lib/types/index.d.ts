@@ -6,7 +6,7 @@ type Player = {
 type Game = {
   id: string;
   name: string;
-  status: "created" | "active" | "started";
+  status: "created" | "active" | "in-progress" | "completed";
   result: "none" | "draw" | "won";
   size: number;
   player1?: Player;
@@ -33,6 +33,8 @@ type ClientConnection = {
   lastRecievedMessage?: unknown;
   expires: Date;
   ws: unknown;
+  isPlayer: boolean;
+  isCreator: boolean;
 };
 
 type SocketMessage = {
@@ -44,4 +46,8 @@ type GameMoveData = {
   gameId: string;
   playerId: string;
   move: unknown;
+};
+
+type ConnectionRequest = {
+  gameId: string;
 };
