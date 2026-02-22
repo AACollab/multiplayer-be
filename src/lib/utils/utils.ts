@@ -1,6 +1,8 @@
 import { nanoid } from "nanoid";
 import { Request, Response } from "express";
-import { DateTime, Duration } from "luxon";
+import { DateTime } from "luxon";
+import { DEFAULT_EXPIRY } from "../constants";
+import { WebSocket } from "ws";
 
 export const errorResponse = (
   res: Response,
@@ -22,6 +24,20 @@ export const successResponse = <T>(
   return res
     .status(status_code || 200)
     .json({ success: true, message, data: data ?? {} });
+};
+
+export const errorSocketResponse = (message?: string) => {
+  return {
+    success: false,
+    message: message || "An error occurred",
+  };
+};
+
+export const successSocketResponse = <T>(message?: T) => {
+  return {
+    success: true,
+    message: message || "{}",
+  };
 };
 
 export const getUniqueId = (): string => {
@@ -50,6 +66,11 @@ export const getOTP = (length: number = 4): string => {
 
 export const isExpired = (expiry: DateTime) =>
   expiry.diffNow("minutes")?.minutes < 0;
+
+export const setExpiry = (expiresInMinutes?: number) =>
+  DateTime.now()
+    .plus(!!expiresInMinutes ? { minutes: expiresInMinutes } : DEFAULT_EXPIRY)
+    .toJSDate();
 
 export const getToken = (req: Request): string => {
   const segments = (req.headers.authorization ?? "").split(" ");

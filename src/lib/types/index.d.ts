@@ -1,11 +1,9 @@
-import { DateTime } from "luxon";
-
-export interface Player {
+type Player = {
   id: string;
   name: string;
-}
+};
 
-export interface Game {
+type Game = {
   id: string;
   name: string;
   status: "created" | "active" | "started";
@@ -13,16 +11,37 @@ export interface Game {
   size: number;
   player1?: Player;
   player2?: Player;
-  expires: DateTime;
-}
+  expires: Date;
+};
 
-export interface OTP {
+type OTP = {
   id: string;
   otp: string;
-  expires: DateTime;
-}
+  expires?: Date;
+};
 
-export interface CreateGameResponse {
+type CreateGameResponse = {
   gameId: string;
   otp: string;
-}
+};
+
+type ClientConnection = {
+  id: string;
+  gameId: string;
+  status: "unknown" | "active" | "inactive";
+  lastSentMessage?: unknown;
+  lastRecievedMessage?: unknown;
+  expires: Date;
+  ws: unknown;
+};
+
+type SocketMessage = {
+  type: "otp" | "move" | "disconnect" | "connect";
+  data: unknown;
+};
+
+type GameMoveData = {
+  gameId: string;
+  playerId: string;
+  move: unknown;
+};

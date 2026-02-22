@@ -1,5 +1,5 @@
 import { CronJob } from "cron";
-import { gamesDB } from "../db";
+import { gamesDB, otpDB } from "../db";
 
 class SchedulerService {
   constructor() {}
@@ -17,9 +17,11 @@ class SchedulerService {
 
   cleanOTPs() {
     console.log("Cleaning OTPs");
+    otpDB.cleanExpiredOTPs();
   }
 
   cleanGames() {
+    console.log("Cleaning Games");
     gamesDB.cleanExpiredGames();
   }
 }

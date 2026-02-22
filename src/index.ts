@@ -13,7 +13,7 @@ app.use(express.urlencoded({ extended: true })); // Parses URL-encoded bodies
 app.use("/", router);
 
 new GamesWSServer(server);
-scheduler.start();
+//scheduler.start();
 
 server.listen(port, () => {
   console.log(`Server listening on port ${port}`);

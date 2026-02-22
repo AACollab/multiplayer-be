@@ -6,7 +6,6 @@ import {
   successResponse,
 } from "../lib/utils/utils";
 import { gamesDB, otpDB } from "../lib/db";
-import { Game } from "../lib/types";
 import { number } from "yup";
 import { MAX_GAME_SIZE, MIN_GAME_SIZE } from "../lib/constants";
 

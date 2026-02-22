@@ -1,6 +1,11 @@
 import { DateTime } from "luxon";
-import { Game, OTP } from "../types";
-import { getOTP, getUniqueId, getUniqueName, isExpired } from "../utils/utils";
+import {
+  getOTP,
+  getUniqueId,
+  getUniqueName,
+  isExpired,
+  setExpiry,
+} from "../utils/utils";
 import { DEFAULT_EXPIRY } from "../constants";
 
 class GamesDB {
@@ -26,7 +31,7 @@ class GamesDB {
       status: "created",
       result: "none",
       size,
-      expires: DateTime.now().plus(DEFAULT_EXPIRY),
+      expires: setExpiry(),
     } as Game;
   }
 
@@ -66,13 +71,25 @@ class GamesDB {
     return foundGame;
   }
 
+  playerExists(gameId: string, playerId: string) {
+    const foundGame = this.games.find(
+      (game) =>
+        game.id === gameId &&
+        (game.player1.id === playerId || game.player2.id === playerId),
+    );
+
+    return !!foundGame;
+  }
+
   cleanExpiredGames() {
-    this.games = this.games.filter((item) => !isExpired(item.expires));
+    this.games = this.games.filter(
+      (item) => !isExpired(DateTime.fromJSDate(item.expires)),
+    );
   }
 }
 
 class OTPDB {
-  otps: OTP[] = [];
+  private otps: OTP[] = [];
 
   constructor() {}
 
@@ -80,7 +97,7 @@ class OTPDB {
     return {
       id: gameId,
       otp: getOTP(),
-      expires: DateTime.now().plus(DEFAULT_EXPIRY),
+      expires: setExpiry(),
     } as OTP;
   }
 
@@ -115,7 +132,19 @@ class OTPDB {
   }
 
   cleanExpiredOTPs() {
-    this.otps = this.otps.filter((item) => !isExpired(item.expires));
+    this.otps = this.otps.filter(
+      (item) => !isExpired(DateTime.fromJSDate(item.expires)),
+    );
+  }
+
+  validate(id: string, otp: string) {
+    const foundRecord = this.read(id);
+
+    if (foundRecord) {
+      return foundRecord.otp === otp;
+    }
+
+    return false;
   }
 }
 
