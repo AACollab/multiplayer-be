@@ -12,7 +12,8 @@ export enum MessageTypes {
   MOVE = "move",
   DISCONNECT = "disconnect",
   CONNECT = "connect",
-  ACKNOWLEDGMENT = "acknowledgement",
+  OTP_ACKNOWLEDGMENT = "otp_acknowledgement",
+  JOIN_ACKNOWLEDGMENT = "join_acknowledgement",
 }
 
 export enum GameStatus {
