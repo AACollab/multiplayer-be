@@ -113,7 +113,7 @@ export class GamesWSServer {
     otpDB.delete(gameId);
     gamesDB.update({ ...foundGame, status: GameStatus.ACTIVE });
 
-    return successSocketResponse(MessageTypes.ACKNOWLEDGMENT, {
+    return successSocketResponse(MessageTypes.OTP_ACKNOWLEDGMENT, {
       playerId: newConnection.id,
       gameId: newConnection.gameId,
     });
@@ -153,7 +153,7 @@ export class GamesWSServer {
         return errorSocketResponse("No players available to play");
       }
 
-      return successSocketResponse(MessageTypes.ACKNOWLEDGMENT, {
+      return successSocketResponse(MessageTypes.JOIN_ACKNOWLEDGMENT, {
         playerId: newConnection.id,
         gameId: newConnection.gameId,
       });
