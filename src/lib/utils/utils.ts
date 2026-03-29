@@ -35,12 +35,14 @@ export const errorSocketResponse = (message?: string) => {
 
 export const successSocketResponse = <T>(
   messageType: MessageTypes,
-  message?: T,
+  data?: T,
+  message?: string,
 ) => {
   return {
     success: true,
     type: messageType,
-    message: message || "{}",
+    data: data || "{}",
+    message: message || "",
   };
 };
 
