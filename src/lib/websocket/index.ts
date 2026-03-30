@@ -166,6 +166,8 @@ export class GamesWSServer {
     const allPayers = this.getAllPlayersExcept(gameId, playerId);
 
     console.log(`Sending moves to ${allPayers.length}`);
+    console.log(`Sending moves to ${allPayers}`);
+    console.log(`Got moves from ${playerId}`);
 
     if (allPayers.length > 0) {
       allPayers.forEach((connection) => {
