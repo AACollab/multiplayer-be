@@ -169,6 +169,14 @@ export class GamesWSServer {
       allPayers.forEach((connection) => {
         const messageToSend = successSocketResponse(MessageTypes.MOVE, move);
 
+        console.log("-----------------");
+        console.log("Sending move to:");
+        console.log(connection);
+        console.log("Move details: ");
+        console.log(messageToSend);
+        console.log("-----------------");
+        console.log("\\n");
+
         this.sendRawMessage(
           connection.ws as WebSocket,
           JSON.stringify(messageToSend),
