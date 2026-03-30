@@ -165,13 +165,15 @@ export class GamesWSServer {
   handleNewMove(gameId: string, playerId: string, move: unknown) {
     const allPayers = this.getAllPlayersExcept(gameId, playerId);
 
+    console.log(`Sending moves to ${allPayers.length}`);
+
     if (allPayers.length > 0) {
       allPayers.forEach((connection) => {
         const messageToSend = successSocketResponse(MessageTypes.MOVE, move);
 
         console.log("-----------------");
         console.log("Sending move to:");
-        console.log(connection);
+        console.log(connection.id, connection.gameId);
         console.log("Move details: ");
         console.log(messageToSend);
         console.log("-----------------");
