@@ -9,6 +9,7 @@ type Game = {
   status: "created" | "active" | "in-progress" | "completed";
   result: "none" | "draw" | "won";
   size: number;
+  details?: unknown;
   player1?: Player;
   player2?: Player;
   expires: Date;
@@ -38,7 +39,7 @@ type ClientConnection = {
 };
 
 type SocketMessage = {
-  type: "otp" | "move" | "disconnect" | "connect";
+  type: "create" | "otp" | "move" | "disconnect" | "connect";
   data: unknown;
 };
 

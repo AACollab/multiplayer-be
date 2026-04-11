@@ -55,6 +55,16 @@ export class GamesWSServer {
   processMessage(ws: WebSocket, message: SocketMessage) {
     var response = null;
     switch (message.type || "") {
+      case MessageTypes.CREATE:
+        const createGameDetails = message.data as unknown;
+        response = this.handleCreateGame(ws, createGameDetails);
+
+        if (!response.success) {
+          ws.close();
+          return;
+        }
+        break;
+
       case MessageTypes.OTP:
         const otpDetails = message.data as OTP;
         response = this.handleOTP(ws, otpDetails.id, otpDetails.otp);
@@ -91,8 +101,31 @@ export class GamesWSServer {
     this.sendRawMessage(ws, JSON.stringify(response));
   }
 
+  handleCreateGame(ws: WebSocket, gameDetails: unknown) {
+    const newGame = gamesDB.newWithData(gameDetails);
+
+    const game = gamesDB.add(newGame);
+
+    if (game === newGame) {
+      const newOTP = otpDB.new(game.id);
+
+      const otp = otpDB.add(newOTP);
+
+      if (otp === newOTP) {
+        return successSocketResponse(MessageTypes.CREATE_GAME_ACKNOWLEDGMENT, {
+          ...game,
+          otp: otp.otp,
+        });
+      }
+    }
+
+    return errorSocketResponse("Unable to create game");
+  }
+
   handleOTP(ws: WebSocket, gameId: string, otp: string) {
     const foundGame = gamesDB.read(gameId);
+
+    console.log(`Otp`);
 
     if (!foundGame) {
       return errorSocketResponse("Game not found");

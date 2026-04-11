@@ -35,6 +35,17 @@ class GamesDB {
     } as Game;
   }
 
+  newWithData(data: unknown) {
+    return {
+      id: getUniqueId(),
+      name: getUniqueName(),
+      status: "created",
+      result: "none",
+      details: data,
+      expires: setExpiry(),
+    } as Game;
+  }
+
   add(game: Game) {
     this.games.push(game);
 
