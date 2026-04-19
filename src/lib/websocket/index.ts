@@ -66,7 +66,15 @@ export class GamesWSServer {
         break;
 
       case MessageTypes.OTP:
-        const otpDetails = message.data as OTP;
+        let otpDetails: OTP;
+
+        if (typeof message.data === "string") {
+          // It's a string, parse it
+          otpDetails = JSON.parse(message.data) as OTP;
+        } else {
+          // It's already an object, cast directly
+          otpDetails = message.data as OTP;
+        }
         response = this.handleOTP(ws, otpDetails.id, otpDetails.otp);
 
         if (!response.success) {
@@ -91,6 +99,10 @@ export class GamesWSServer {
           gameData.playerId,
           gameData.move,
         );
+        break;
+
+      case MessageTypes.GAMES_LIST:
+        response = this.handleGamesList();
         break;
 
       default:
@@ -172,10 +184,13 @@ export class GamesWSServer {
 
       if (allPayers.length > 0) {
         allPayers.forEach((connection) => {
-          const messageToSend = successSocketResponse(MessageTypes.CONNECT, {
-            playerId: newConnection.id,
-            gameId: newConnection.gameId,
-          });
+          const messageToSend = successSocketResponse(
+            MessageTypes.ANOTHER_PLAYER_JOIN_ACKNOWLEDGMENT,
+            {
+              playerId: newConnection.id,
+              gameId: newConnection.gameId,
+            },
+          );
 
           this.sendRawMessage(
             connection.ws as WebSocket,
@@ -224,6 +239,13 @@ export class GamesWSServer {
     }
 
     return successSocketResponse(MessageTypes.MOVE, move);
+  }
+
+  handleGamesList() {
+    return successSocketResponse(
+      MessageTypes.GAMES_LIST_ACKNOWLEDGMENT,
+      gamesDB.allActiveGames,
+    );
   }
 
   getCreator(gameId: string) {

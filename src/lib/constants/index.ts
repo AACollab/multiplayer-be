@@ -13,9 +13,12 @@ export enum MessageTypes {
   MOVE = "move",
   DISCONNECT = "disconnect",
   CONNECT = "connect",
+  GAMES_LIST = "list",
   OTP_ACKNOWLEDGMENT = "otp_acknowledgement",
   JOIN_ACKNOWLEDGMENT = "join_acknowledgement",
+  ANOTHER_PLAYER_JOIN_ACKNOWLEDGMENT = "another_player_join_acknowledgement",
   CREATE_GAME_ACKNOWLEDGMENT = "create_game_acknowledgement",
+  GAMES_LIST_ACKNOWLEDGMENT = "list_acknowledgement",
 }
 
 export enum GameStatus {

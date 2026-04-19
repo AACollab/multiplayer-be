@@ -39,7 +39,7 @@ type ClientConnection = {
 };
 
 type SocketMessage = {
-  type: "create" | "otp" | "move" | "disconnect" | "connect";
+  type: "create" | "otp" | "move" | "disconnect" | "connect" | "list";
   data: unknown;
 };
 
